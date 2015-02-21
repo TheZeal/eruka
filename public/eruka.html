@@ -8,17 +8,17 @@
 <body>
 	<canvas id="board" width="840" height="840"></canvas> 
 	<script>
-		var result;
-	 	$.get( '/change', { "id":1 });
-	 	$.post( '/game', { "opp":2 });
+		var game;
+//	 	$.post( '/game', { "opp":2 });
 	 	$.get( '/game', { "name":"zeal" }, function(data)
 	 	{
 	 		console.log( data );
-	 	});
-	 	$.get( '/aGame', { "number":1 }, function(data)
-	 	{
-	 		result = data
-	 		affBattlefield(0)
+	 		if (data.length>=1)
+			 	$.get( data[0].game, {}, function(data)
+			 	{
+			 		game = data
+			 		affBattlefield(0)
+			 	});
 	 	});
 		var c=document.getElementById("board");
 		var ctx=c.getContext("2d");
@@ -38,8 +38,9 @@
     		ctx.rect(0,0,840,840);
     		ctx.fillStyle="black";
     		ctx.fill();
-			drawSquare(arg==0?result[0].x:result[1].x,arg==0?result[0].y:result[1].y,38,"green")
-			drawSquare(arg==1?result[0].x:result[1].x,arg==1?result[0].y:result[1].y,38,"red")
+    		var players = game.players;
+			drawSquare(arg==0?players[0].x:players[1].x,arg==0?players[0].y:players[1].y,38,"green")
+			drawSquare(arg==1?players[0].x:players[1].x,arg==1?players[0].y:players[1].y,38,"red")
 		}
 	 	//$.get( '/allPlayer', function(data)
 	 	//{

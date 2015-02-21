@@ -16,20 +16,34 @@ var conString = "pg://localhost:5432/eruka";
 var client = new pg.Client(conString);
 client.connect();
 
+var game_url = function( id )
+{
+	return "/game/"+id;
+}
 
+var login_url = function( id )
+{
+	return "/login/"+id;
+}
+
+//	------------------------------------------------------------------------------------
+//	Games
+//	------------------------------------------------------------------------------------
 
 // Creation of a new game
-//	arg: opp=<opp_id>
+//	POST /game WITH opp=<opp_id>
+//	=> { "game_id": <game_id> }
 app.post( '/game', function( req, res )
 {
 	res.writeHead( 200, { 'Content-Type': 'application/json' } );
 
 	createGame(req.body["opp"], function( game_id ) {
-		res.end( JSON.stringify( { game_id: game_id } ));
+		res.end( JSON.stringify( { "game": game_url( game_id ) } ));
 	} );
 });
 
-//	Return a game
+//	GET /game/<game_id>
+//	=> full game description
 app.get( '/game/:game_id', function( req, res )
 {
 	res.writeHead( 200, { 'Content-Type': 'application/json' } );
@@ -42,7 +56,47 @@ app.get( '/game/:game_id', function( req, res )
 	} );
 } );
 
+//	Lists current games for a named player [#### ugly]
+//	GET /game?name=zeal
+app.get( '/game', function( req, res )
+{
+	res.writeHead( 200, { 'Content-Type': 'application/json' } );
 
+	var games = [];
+
+	var query = client.query('select game_id from in_progress where name=$1', [req.query.name] );
+	query.on("row", function (row, result)
+	{
+		games.push( { "game_id": row.game_id, "game": game_url( row.game_id ) } );
+	});
+
+	query.on("end", function (result)
+	{
+		res.end( JSON.stringify( games ) );
+	});
+});
+
+//	------------------------------------------------------------------------------------
+//	Logins
+//	------------------------------------------------------------------------------------
+
+//	GET /login/<login_id>
+//	=> full login description
+app.get( '/login/:login_id', function( req, res )
+{
+	res.writeHead( 200, { 'Content-Type': 'application/json' } );
+
+	var login_id = req.params["login_id"];
+
+	fetch_login( login_id, function( login )
+	{
+		res.end( JSON.stringify( login ));
+	} );
+} );
+
+
+
+/*
 app.get( '/allPlayer', function( req, res )
 {
 	res.writeHead( 200, { 'Content-Type': 'application/json' } );
@@ -78,7 +132,7 @@ app.get( '/allGame', function( req, res )
 		res.end( JSON.stringify( game ) );
 	});
 });
-
+*/
 app.get( '/change', function( req, res )
 {
 	res.writeHead( 200, { 'Content-Type': 'application/json' } );
@@ -89,23 +143,7 @@ app.get( '/change', function( req, res )
 
 });
 
-app.get( '/aGame', function( req, res )
-{
-	res.writeHead( 200, { 'Content-Type': 'application/json' } );
 
-	var games = [];
-
-	var query = client.query('select * from in_progress where game_id=$1', [req.query.number] );
-	query.on("row", function (row, result)
-	{
-		games.push( row );
-	});
-
-	query.on("end", function (result)
-	{
-		res.end( JSON.stringify( games ) );
-	});
-});
 
 app.listen( 8080 );
 
@@ -143,19 +181,21 @@ function createGame(opp, callback)
 function fetch_game( game_id, callback )
 {
 	fetch_players( game_id, function(players) {
-		var game = {game_id: game_id, players: players};
+		var game = {game: game_url(game_id), players: players};
+		
+		//	We have nothing else, for now
 		callback( game );
 	})
 }
 
-function fetch_players( game_id,callback )
+function fetch_players( game_id, callback )
 {
 	var players = []
 	var query = client.query("select x,y,hp,login_id from player where game_id=$1 order by player_num",[game_id])
 	query.on( "row", function (row, result)
 	{
 		player = {}
-		player.login_id = row["login_id"];
+		player.login = login_url( row["login_id"] );
 		player.x = row["x"];
 		player.y = row["y"];
 		player.hp = row["hp"];
@@ -170,3 +210,17 @@ function fetch_players( game_id,callback )
 
 //function fetch_actions( game_id,callback)
 
+function fetch_login( login_id, callback )
+{
+	var login = {};
+	var query = client.query("select login_id, name from login where login_id=$1",[login_id])
+	query.on( "row", function (row, result)
+	{
+		login.login = login_url( row["login_id"] );
+		login.name = row["name"];
+	} );
+	query.on( "end", function (result)
+	{
+		callback(login)
+	});
+}
