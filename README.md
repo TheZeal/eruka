@@ -1,12 +1,26 @@
-Step 1, install dependencies using npm
+Installing Eruka
+================
 
-cd eruka
-# Will take a few seconds
-npm install
+Install dependencies using npm
 
+    cd eruka
+    npm install
 
+	psql eruka -q < createdb.sql
 
-curl -s localhost:8080/game/1 | underscore print
+You're done!
 
-curl -s -d opp=2 localhost:8080/game | underscore print
+Starting the server
+===================
+
+    node eruka-server.js
+
+Also, start the postgresql server
+
+Checking that the server is ok
+==============================
+
+    curl -s localhost:8080/game/1 | underscore print
+
+    curl -s -d opp=2 localhost:8080/game | underscore print
 
