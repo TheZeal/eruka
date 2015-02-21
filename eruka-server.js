@@ -1,6 +1,8 @@
 //	curl -d opp=1 localhost:8080/game
 
+var crypto = require('crypto');
 var http = require( 'http' );
+var passport = require( 'passport' );
 var pg = require("pg");
 var connect = require( 'connect' );
 var serveStatic = require('serve-static');
@@ -9,12 +11,17 @@ var express = require( 'express' );
 var app = express()
 	.use( '/eruka', serveStatic( 'public' ) );
 app.use(bodyParser.urlencoded( { extended: true } ));
+app.use(passport.initialize());
 
 var current_login = 1;
 
 var conString = "pg://localhost:5432/eruka";
 var client = new pg.Client(conString);
 client.connect();
+
+var passport_http = require('passport-http');
+
+passport.use(new passport_http.BasicStrategy( check_user ));
 
 var game_url = function( id )
 {
@@ -25,6 +32,22 @@ var login_url = function( id )
 {
 	return "/login/"+id;
 }
+
+//	We want an auth for all pages
+app.all('*', passport.authenticate('basic', { session: false }) );
+
+//	------------------------------------------------------------------------------------
+//	Login
+//	------------------------------------------------------------------------------------
+
+// app.post('/login', passport.authenticate('local', { successRedirect: '/',
+//                                                     failureRedirect: '/login' }));
+app.get('/login',
+  function(req, res) {
+    // res.json({ id: req.user.id, username: req.user.username });
+		res.redirect( "/eruka/eruka.html" );
+  }
+);
 
 //	------------------------------------------------------------------------------------
 //	Games
@@ -143,10 +166,6 @@ app.get( '/change', function( req, res )
 
 });
 
-
-
-app.listen( 8080 );
-
 function changeGameState(game)
 {
 	var query = client.query('update game set state=1 where game_id=$1', [ game ]);
@@ -224,3 +243,34 @@ function fetch_login( login_id, callback )
 		callback(login)
 	});
 }
+
+function password_hash( password )
+{
+	var salt = "Eruka";
+	return crypto.createHash( 'sha256' ).update( password ).update( salt ).digest( 'hex' );
+}
+
+function check_user( login_name, password, callback )
+{
+	// console.log( "check_user "+login_name+"/"+password );
+	var found = false;
+	var query = client.query("select sha256 from login where name=$1",[login_name])
+	query.on( "row", function (row, result)
+	{
+		password_hash1 = row["sha256"];
+		password_hash2 = password_hash( password );
+		console.log( "HASH : ", password_hash1, password_hash2 );
+		if (password_hash1===password_hash2)
+			callback( null, {} );
+		else
+			callback( "ERROR" );
+		found = true;
+	} );
+	query.on( "end", function (result)
+	{
+		if (!found)
+			callback( "ERROR" );
+	});
+}
+
+app.listen( 8080 );

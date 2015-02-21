@@ -8,7 +8,9 @@
 		"pg": "4.2.x",
 		"body-parser": "1.12.x",
 		"connect": "3.3.x",
-		"serve-static": "1.8.x"
+		"serve-static": "1.8.x",
+		"passport": "0.2.1",
+		"passport-http": "0.2.x"
 	},
 	"engine": "node >= 0.10.36"
 }

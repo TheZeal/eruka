@@ -63,7 +63,7 @@ create table output
 	damage int null
 );
 
-insert into login( name, sha256, connected ) values ( 'zeal', '', true );
+insert into login( name, sha256, connected ) values ( 'zeal', 'fd147152b78f317bc96ec8837d3b53882b0b1785129d22a6891a85237445ddc8', true );
 insert into login( name, sha256, connected ) values ( 'baconaro', '', true );
 insert into player ( login_id, game_id, player_num, initial_hp, initial_x, initial_y, hp, x, y ) values ( 1, 1, 0, 100, 10, 20, 100, 10, 20 );
 insert into player ( login_id, game_id, player_num, initial_hp, initial_x, initial_y, hp, x, y ) values ( 2, 1, 1, 100, 10, 0, 100, 10, 0 );
