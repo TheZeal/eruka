@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<title>Give and take</title>
+	<script src="jquery-2.1.3.min.js"></script>
+</head>
+<body>
+	<canvas id="board" width="840" height="840"></canvas> 
+	<script>
+		var result;
+	 	$.get( '/change', { "id":1 });
+	 	$.post( '/game', { "opp":2 });
+	 	$.get( '/game', { "name":"zeal" }, function(data)
+	 	{
+	 		console.log( data );
+	 	});
+	 	$.get( '/aGame', { "number":1 }, function(data)
+	 	{
+	 		result = data
+	 		affBattlefield(0)
+	 	});
+		var c=document.getElementById("board");
+		var ctx=c.getContext("2d");
+		var battlefieldXSize = 21;
+		var battlefieldYSize = 21;
+		//document.onkeydown = checkKey;
+		function drawSquare(x,y,size,color)
+		{
+		    ctx.beginPath();
+		    ctx.rect(x*40+(40-size)/2,y*40+(40-size)/2,size,size);
+		    ctx.fillStyle=color;
+		    ctx.fill();
+		}
+		function affBattlefield(arg) //Use 0 for player 0, 1 for player 1
+		{
+    		ctx.beginPath();
+    		ctx.rect(0,0,840,840);
+    		ctx.fillStyle="black";
+    		ctx.fill();
+			drawSquare(arg==0?result[0].x:result[1].x,arg==0?result[0].y:result[1].y,38,"green")
+			drawSquare(arg==1?result[0].x:result[1].x,arg==1?result[0].y:result[1].y,38,"red")
+		}
+	 	//$.get( '/allPlayer', function(data)
+	 	//{
+	 	//	console.log( data );
+	 	//});
+	 	//$.get( '/allGame', function(data)
+	 	//{
+	 	//	console.log( data );
+	 	//});
+	</script>
+</body>
+</html>
