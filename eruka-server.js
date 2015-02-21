@@ -168,5 +168,5 @@ function fetch_players( game_id,callback )
 	});
 }
 
-function fetch_actions( game_id,callback)
+//function fetch_actions( game_id,callback)
 

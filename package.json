@@ -1,0 +1,14 @@
+{
+	"name": "eruka",
+	"version": "0.0.1",
+	"description:": "Eruka -- a game about outsmarting",
+	"dependencies":
+	{
+		"express": "4.11.x",
+		"pg": "4.2.x",
+		"body-parser": "1.12.x",
+		"connect": "3.3.x",
+		"serve-static": "1.8.x"
+	},
+	"engine": "node >= 0.10.36"
+}
